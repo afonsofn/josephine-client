@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "josephine",
-    "slug": "josephine",
+    "name": "josephine-client",
+    "slug": "josephine-client",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
