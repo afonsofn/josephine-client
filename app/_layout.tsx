@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { SplashScreen, Stack } from 'expo-router'
 import { useFonts } from 'expo-font'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { Provider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistor, store } from '@/store'
 
 export { ErrorBoundary } from 'expo-router'
 // eslint-disable-next-line camelcase
@@ -26,7 +29,13 @@ export default function RootLayout() {
 
   if (!loaded) return null
 
-  return <RootLayoutNav />
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <RootLayoutNav />
+      </PersistGate>
+    </Provider>
+  )
 }
 
 function RootLayoutNav() {

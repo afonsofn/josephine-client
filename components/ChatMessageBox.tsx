@@ -2,12 +2,20 @@ import { StyleSheet, View } from 'react-native'
 
 import Text from '@/components/Text'
 
-import { ChatMessageProps } from '@/types/propTypes'
+import { ChatMessageBoxProps } from '@/types/propTypes'
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
   // REFACT
   const user = {
     userId: 1,
+  }
+
+  function formatTime(dateTimeString: string) {
+    const date = new Date(dateTimeString)
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+
+    return `${hours}:${minutes}`
   }
 
   const isSentByUser = () => user.userId === message.senderId
@@ -30,7 +38,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 
         <View style={{ alignSelf: 'flex-end' }}>
           <Text highLight={isSentByUser()} lowLight={!isSentByUser()}>
-            {message.createdAt} 読む
+            {formatTime(message.createdAt)} 読む
           </Text>
         </View>
       </View>

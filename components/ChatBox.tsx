@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   contactNameAndMessage: {
     flex: 1,
-    justifyContent: 'space-between',
+    gap: 6,
   },
   bottomLine: {
     height: 1,

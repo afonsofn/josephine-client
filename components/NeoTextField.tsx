@@ -1,5 +1,5 @@
 import { StyleSheet, View, TextInput } from 'react-native'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import NeonStrip from '@/components/NeonStrip'
 
@@ -9,8 +9,13 @@ import { NeoTextFieldProps } from '@/types/propTypes'
 export default function NeoTextField({
   onChangeText,
   onPress,
+  value,
 }: NeoTextFieldProps) {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(value || '')
+
+  useEffect(() => {
+    setText(value)
+  }, [value])
 
   const handleInputChange = (text: string) => {
     setText(text)

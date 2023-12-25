@@ -32,7 +32,7 @@ export interface ChatGradientBgProps {
   isChatOnline: boolean
 }
 
-export interface ChatMessageProps {
+export interface ChatMessageBoxProps {
   message: ChatMessage
 }
 
@@ -44,6 +44,7 @@ export interface NeonStripProps {
 export interface NeoTextFieldProps {
   onPress: () => void
   onChangeText: (text: string) => void
+  value: string
   style?: StyleProp<ViewStyle>
 }
 

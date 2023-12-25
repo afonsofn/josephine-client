@@ -69,6 +69,8 @@ const defaultStyles = StyleSheet.create({
     textShadowRadius: 7.5,
     fontWeight: '700',
     fontFamily: 'Courier New',
+    padding: 6,
+    margin: -6,
   },
   tokyoText: {
     color: colors.primaryForElements,
