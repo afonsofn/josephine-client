@@ -3,9 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios --clear",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "ios-15": "expo run:ios --device E2B14078-749E-4CE4-9155-BD65560900A3",
+    "ios-15-pro-max": "expo run:ios --device F914A4A7-9084-44BB-A614-B7A0AB8EEB5C",
     "web": "expo start --web",
     "test": "jest --watchAll"
   },

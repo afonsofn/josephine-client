@@ -1,23 +1,27 @@
 import { View } from 'react-native'
 import { useState } from 'react'
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
+import { useDispatch } from 'react-redux'
 
 import Text from '@/components/Text'
 import MainGradientBg from '@/components/MainGradientBg'
 import NeoTextField from '@/components/NeoTextField'
 
-import { loginByEmail, registerByEmail, verifyEmail } from '../api'
+import { getUserInfo, loginByEmail, registerByEmail, verifyEmail } from '../api'
 import { useAuthToken } from '@/utils'
+import { setUserData } from '@/store/slices/userSlice'
+import socket from '../socket'
 
 export default function ContactList() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('joe@doe.com')
+  const [password, setPassword] = useState('Password@123')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [nickname, setNickname] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
 
   const { saveToken } = useAuthToken()
+  const dispatch = useDispatch()
 
   const logon = async () => {
     await registerByEmail({
@@ -31,12 +35,7 @@ export default function ContactList() {
 
   const verify = async () => {
     // eslint-disable-next-line camelcase
-    const { access_token } = await verifyEmail({
-      email,
-      verificationCode,
-    })
-
-    console.log(access_token)
+    const { access_token } = await verifyEmail({ email, verificationCode })
 
     await saveToken(access_token)
   }
@@ -48,11 +47,15 @@ export default function ContactList() {
       password,
     })
 
-    console.log(access_token)
-
     await saveToken(access_token)
 
-    // router.push('/ContactList')
+    const userInfo = await getUserInfo()
+
+    socket.emit('connectingSocket', userInfo.id)
+
+    dispatch(setUserData(userInfo))
+
+    router.push('/ContactList')
   }
 
   return (

@@ -7,15 +7,16 @@ import Text from '@/components/Text'
 
 import { colors } from '@/utils'
 import { ChatGradientBgProps } from '@/types/propTypes'
+import { ChatStatus } from '@/types'
 
 export default function ChatGradientBg({
   children,
   chatName,
-  isChatOnline = false,
+  chatStatus = ChatStatus.OFFLINE,
 }: ChatGradientBgProps) {
   const [chatNameWidth, setChatNameWidth] = useState(0)
 
-  const chatNameMargin = 12
+  const CHAT_NAME_MARGIN = 4
 
   const getTwoFirstNames = (name?: string) => {
     if (!name) return '?'
@@ -30,7 +31,7 @@ export default function ChatGradientBg({
   const handleOnLayoutText = ({ nativeEvent }: LayoutChangeEvent) => {
     const { width } = nativeEvent.layout
 
-    setChatNameWidth(width + chatNameMargin * 2)
+    setChatNameWidth(width + CHAT_NAME_MARGIN * 2)
   }
 
   const InnerBlurShadow = () => {
@@ -56,7 +57,7 @@ export default function ChatGradientBg({
       {/* Chat bg */}
       <LinearGradient
         colors={
-          isChatOnline
+          chatStatus === ChatStatus.ONLINE
             ? colors.onlineChatBorderGradient
             : colors.offlineChatBorderGradient
         }
@@ -95,13 +96,13 @@ export default function ChatGradientBg({
         <Text
           style={{
             ...styles.chatName,
-            marginLeft: chatNameMargin,
+            marginLeft: CHAT_NAME_MARGIN,
           }}
           onLayout={handleOnLayoutText}
           numberOfLines={1}
           ellipsizeMode="tail"
-          accentColor={isChatOnline}
-          lowLight={!isChatOnline}
+          accentColor={chatStatus === ChatStatus.ONLINE}
+          lowLight={chatStatus === ChatStatus.OFFLINE}
         >
           {getTwoFirstNames(chatName)}
         </Text>
@@ -114,24 +115,28 @@ export default function ChatGradientBg({
           ...styles.chatStatusContainer,
         }}
       >
-        <Text
+        <View
           style={{
             ...styles.chatStatus,
-            marginLeft: chatNameMargin,
+            marginLeft: CHAT_NAME_MARGIN,
           }}
-          accentColor={isChatOnline}
-          lowLight={!isChatOnline}
         >
           <View
             style={[
               styles.chatStatusIcon,
-              isChatOnline
+              chatStatus === ChatStatus.ONLINE
                 ? styles.chatStatusIconOnline
                 : styles.chatStatusIconOffline,
             ]}
-          ></View>{' '}
-          {isChatOnline ? 'online' : 'offline'}
-        </Text>
+          ></View>
+          <Text
+            style={{ fontSize: 10 }}
+            accentColor={chatStatus === ChatStatus.ONLINE}
+            lowLight={chatStatus === ChatStatus.OFFLINE}
+          >
+            {chatStatus === ChatStatus.ONLINE ? 'online' : 'offline'}
+          </Text>
+        </View>
       </View>
 
       {/* Chat japanese status */}
@@ -143,8 +148,8 @@ export default function ChatGradientBg({
       >
         <Text
           style={{ fontSize: 10, padding: 6, margin: -6 }}
-          accentColor={isChatOnline}
-          lowLight={!isChatOnline}
+          accentColor={chatStatus === ChatStatus.ONLINE}
+          lowLight={chatStatus === ChatStatus.OFFLINE}
         >
           オンライン
         </Text>
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
   },
   chatStatus: {
     alignSelf: 'flex-start',
-    fontSize: 10,
+    flexDirection: 'row',
   },
   chatStatusIcon: {
     height: 5,
@@ -200,6 +205,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.5,
     shadowOpacity: 1,
     borderRadius: 100,
+    marginTop: 3.5,
+    marginHorizontal: 6,
   },
   chatStatusIconOnline: {
     shadowColor: colors.primaryShadowBrighter,
@@ -207,7 +214,7 @@ const styles = StyleSheet.create({
   },
   chatStatusIconOffline: {
     shadowColor: colors.lowLight,
-    backgroundColor: colors.lowLightShadowForElements,
+    backgroundColor: colors.lowLightShadowForText,
   },
   innerBlurShadow: {
     ...StyleSheet.absoluteFillObject,

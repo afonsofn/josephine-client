@@ -10,13 +10,17 @@ export default function TokyoImageButton({
   return (
     <TouchableWithoutFeedback onPress={onPress}>
       <View style={styles.container}>
-        <Image
-          alt={imageAlt}
-          source={{ uri: imageUrl }}
-          style={styles.buttonImage}
-        />
+        {imageUrl ? (
+          <Image
+            alt={imageAlt}
+            source={{ uri: imageUrl }}
+            style={styles.buttonImage}
+          />
+        ) : (
+          <View style={styles.buttonImage}></View>
+        )}
 
-        <Text style={{ lineHeight: 16 }}>私のエリア</Text>
+        <Text style={{ lineHeight: 16, paddingBottom: 0 }}>私のエリア</Text>
       </View>
     </TouchableWithoutFeedback>
   )
@@ -36,5 +40,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width: 34,
     resizeMode: 'cover',
+    backgroundColor: 'red',
   },
 })

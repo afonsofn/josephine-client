@@ -3,12 +3,14 @@ import { StyleSheet, View } from 'react-native'
 import Text from '@/components/Text'
 
 import { ChatMessageBoxProps } from '@/types/propTypes'
+import { UserInfo } from '@/types/globalTypes'
+import { useSelector } from 'react-redux'
+import { UserState } from '@/store/slices/userSlice'
 
 export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
-  // REFACT
-  const user = {
-    userId: 1,
-  }
+  const user: UserInfo | null = useSelector(
+    (state: UserState) => state?.userState.user,
+  )
 
   function formatTime(dateTimeString: string) {
     const date = new Date(dateTimeString)
@@ -18,7 +20,7 @@ export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
     return `${hours}:${minutes}`
   }
 
-  const isSentByUser = () => user.userId === message.senderId
+  const isSentByUser = () => user?.id === message.senderId
 
   return (
     <View
@@ -37,7 +39,11 @@ export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
         </Text>
 
         <View style={{ alignSelf: 'flex-end' }}>
-          <Text highLight={isSentByUser()} lowLight={!isSentByUser()}>
+          <Text
+            style={{ fontSize: 8 }}
+            highLight={isSentByUser()}
+            lowLight={!isSentByUser()}
+          >
             {formatTime(message.createdAt)} 読む
           </Text>
         </View>
@@ -53,7 +59,6 @@ const styles = StyleSheet.create({
     maxWidth: '90%',
   },
   messageContent: {
-    marginBottom: 2,
     paddingLeft: 4,
     marginLeft: -4,
   },

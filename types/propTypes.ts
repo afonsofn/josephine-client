@@ -1,12 +1,10 @@
 import { Text as DefaultText, StyleProp, ViewStyle } from 'react-native'
 import { ReactNode } from 'react'
-import { ChatMessage } from './globalTypes'
+import { ChatStatus, ChatMessage } from './globalTypes'
 
 export interface ChatBoxProps {
   chatName: string
-  lastMessage: string
-  lastMessageTime: string
-  isChatOnline?: boolean
+  lastMessage: ChatMessage
   chatImage?: string
   chatId: number
 }
@@ -29,7 +27,7 @@ export interface MainGradientBgProps {
 export interface ChatGradientBgProps {
   children: ReactNode
   chatName: string | undefined
-  isChatOnline: boolean
+  chatStatus?: ChatStatus
 }
 
 export interface ChatMessageBoxProps {
@@ -50,7 +48,7 @@ export interface NeoTextFieldProps {
 
 export interface TokyoImageButtonProps {
   onPress: () => void
-  imageUrl: string
+  imageUrl: string | undefined
   imageAlt?: string
 }
 

@@ -1,7 +1,6 @@
 import { StyleSheet, View, ScrollView } from 'react-native'
 import { useEffect, useState } from 'react'
 import { router } from 'expo-router'
-import { io } from 'socket.io-client'
 
 import { ConfigIcon, SearchIcon, NewChatIcon } from '@/components/icons'
 import MainGradientBg from '@/components/MainGradientBg'
@@ -10,49 +9,54 @@ import NeonBars from '@/components/NeonBars'
 import ChatBox from '@/components/ChatBox'
 import Text from '@/components/Text'
 
-import { ChatBoxInfo, ChatMessage } from '@/types/globalTypes'
+import { ChatBoxInfo, ChatMessage, UserInfo } from '@/types'
 
-import { getMyContacts } from '@/api'
-
-const user = {
-  id: 1,
-  firstName: 'Joe',
-  lastName: 'Doe',
-  profileImage:
-    'https://media.licdn.com/dms/image/D4D03AQH04HQkye8_zg/profile-displayphoto-shrink_800_800/0/1692046464398?e=1707350400&v=beta&t=cHh_4lQ7KICrpLeR96EyFOyKbX1uL8vgtS9AtDuV77U',
-}
+import { getUserContacts } from '@/api'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAuthToken } from '@/utils'
+import { UserState, setUserData } from '@/store/slices/userSlice'
+import useSocketListener from '@/utils/useSocketListener'
 
 export default function ContactList() {
-  const [chatList, setChatList] = useState<ChatBoxInfo[]>([])
+  const [userContacts, setUserContacts] = useState<ChatBoxInfo[]>([])
 
-  const socket = io('http://localhost:3332')
+  const user: UserInfo | null = useSelector(
+    (state: UserState) => state?.userState.user,
+  )
+
+  const dispatch = useDispatch()
+  const { clearToken } = useAuthToken()
+
+  const loadUserContacts = async () => {
+    const userContactsResponse = await getUserContacts()
+
+    setUserContacts(userContactsResponse)
+  }
+  const handleMessage = async (message: ChatMessage) => {
+    if (message.senderId === user?.id || message.receiverId === user?.id)
+      await loadUserContacts()
+  }
+
+  useSocketListener('message', handleMessage)
+  useSocketListener('lastMessagesReaded', handleMessage)
 
   useEffect(() => {
-    socket.on('message', (message: ChatMessage) => {
-      if (message.senderId === user.id || message.receiverId === user.id) {
-        getMyContacts().then((contacts) => setChatList(contacts))
-      }
-    })
-
-    getMyContacts().then((contacts) => setChatList(contacts))
+    loadUserContacts()
   }, [])
-
-  function formatTime(dateTimeString: string) {
-    const date = new Date(dateTimeString)
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-
-    return `${hours}:${minutes}`
-  }
 
   return (
     <MainGradientBg>
       <View style={styles.header}>
         <TokyoButton
-          title="new chat"
+          title="logout for now"
           subtitle="新しいチャット"
           Icon={() => <NewChatIcon />}
-          onPress={() => ''}
+          onPress={() => {
+            clearToken()
+            dispatch(setUserData(null))
+
+            router.push('/')
+          }}
         />
 
         <TokyoButton
@@ -70,12 +74,10 @@ export default function ContactList() {
 
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.contactList}>
-          {chatList.map((chat, index) => (
+          {userContacts.map((chat, index) => (
             <ChatBox
               chatName={chat.firstName + ' ' + chat.lastName}
-              lastMessage={chat.lastMessage?.content}
-              lastMessageTime={formatTime(chat.lastMessage?.createdAt)}
-              isChatOnline={chat.status !== 'offline'}
+              lastMessage={chat.lastMessage}
               chatImage={chat.imageUrl}
               chatId={chat.userId}
               key={index}
@@ -114,136 +116,3 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 })
-
-// setChatList([
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatImage:
-//       'https://media.licdn.com/dms/image/D4D03AQH04HQkye8_zg/profile-displayphoto-shrink_800_800/0/1692046464398?e=1707350400&v=beta&t=cHh_4lQ7KICrpLeR96EyFOyKbX1uL8vgtS9AtDuV77U',
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-//   {
-//     chatName: 'Raul Afonso',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '14:32',
-//     isChatOnline: true,
-//     chatId: 1,
-//   },
-//   {
-//     chatName: 'Mari Cavalcanti',
-//     lastMessage:
-//       'Lorem Ipsum is simply dummy text of the printing and Lorem Ipsum is simply dummy text of the printing and',
-//     lastMessageTime: '01:21',
-//     isChatOnline: false,
-//     chatId: 2,
-//   },
-// ])

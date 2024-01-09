@@ -1,11 +1,12 @@
-export interface ChatBoxInfo {
-  firstName: string,
-  lastName: string,
-  imageUrl: string,
-  status: string,
-  userId: number,
-  contactId: number,
-  lastMessage: ChatMessage
+export enum MessageStatus {
+  SENT = 'sent',
+  RECEIVED = 'received',
+  READED = 'readed',
+}
+
+export enum ChatStatus {
+  ONLINE = 'online',
+  OFFLINE = 'offline',
 }
 
 export interface ChatMessage {
@@ -17,15 +18,29 @@ export interface ChatMessage {
   content: string
   createdAt: string
   updatedAt: string
-  status: string
+  status: MessageStatus
 }
 
-export interface ChatInfo {
-  chatName: string
+export interface ChatBoxInfo {
   firstName: string
   lastName: string
-  messages: ChatMessage[]
-  status: boolean
-  imageUrl?: string
+  imageUrl: string
+  userId: number
+  contactId: number
+  lastMessage: ChatMessage
+}
+
+export interface UserInfo {
+  createdAt: string
+  updatedAt: string
+  email: string
+  firstName: string
+  lastName: string
+  nickname: string
   id: number
+  imageUrl?: string
+  phoneNumber?: string
+  provider?: string
+  status: ChatStatus
+  verified: boolean
 }

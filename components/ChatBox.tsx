@@ -1,20 +1,36 @@
 import { StyleSheet, TouchableWithoutFeedback, View, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
+import { useSelector } from 'react-redux'
 
 import Text from '@/components/Text'
 
 import { colors } from '@/utils'
-import { ChatBoxProps } from '@/types/propTypes'
+import { MessageStatus, UserInfo, ChatBoxProps } from '@/types'
+import { UserState } from '@/store/slices/userSlice'
 
 export default function ChatBox({
   chatName,
   lastMessage,
-  lastMessageTime,
-  isChatOnline,
   chatImage,
   chatId,
 }: ChatBoxProps) {
+  const user: UserInfo | null = useSelector(
+    (state: UserState) => state?.userState.user,
+  )
+
+  const isHighLight =
+    lastMessage.status === MessageStatus.SENT &&
+    lastMessage.senderId !== user?.id
+
+  function formatTime(dateTimeString: string) {
+    const date = new Date(dateTimeString)
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+
+    return `${hours}:${minutes}`
+  }
+
   return (
     <TouchableWithoutFeedback
       onPress={() => router.push(`/ChatRoom/${chatId}`)}
@@ -60,12 +76,12 @@ export default function ChatBox({
                 ellipsizeMode="tail"
                 style={{ fontSize: 12 }}
               >
-                {lastMessage}
+                {lastMessage.content}
               </Text>
             </View>
 
-            <Text highLight={isChatOnline} lowLight={!isChatOnline}>
-              {lastMessageTime} 読む
+            <Text highLight={isHighLight} lowLight={!isHighLight}>
+              {formatTime(lastMessage.createdAt)} 読む
             </Text>
           </View>
         </LinearGradient>
@@ -73,7 +89,7 @@ export default function ChatBox({
         <View
           style={[
             styles.bottomLine,
-            isChatOnline ? styles.bottomOnLine : styles.bottomOffLine,
+            isHighLight ? styles.bottomOnLine : styles.bottomOffLine,
           ]}
         ></View>
       </View>

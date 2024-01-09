@@ -13,6 +13,8 @@ module.exports = function (api) {
             '@/components': './components',
             '@/utils': './utils',
             '@/api': './api',
+            '@/socket': './socket',
+            '@/types': './types',
             '@/store': './store',
             '@/': ['./'],
           },
