@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import globalSocket from '@/socket/index'
+import useSocket from '@/socket/index'
 import { Socket } from 'socket.io-client'
 
 const useSocketListener = (
@@ -11,8 +11,10 @@ const useSocketListener = (
     useLocalSocket: false,
   },
 ) => {
+  const globalSocket = useSocket()
+
   useEffect(() => {
-    if (options?.useLocalSocket && localSocket) {
+    if (options.useLocalSocket && localSocket) {
       localSocket.on(event, handler)
 
       return () => {
@@ -21,13 +23,13 @@ const useSocketListener = (
       }
     }
 
-    globalSocket.on(event, handler)
+    globalSocket?.on(event, handler)
 
     return () => {
-      if (options?.shouldTurnOff) globalSocket.off(event, handler)
+      if (options?.shouldTurnOff) globalSocket?.off(event, handler)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [globalSocket])
 }
 
 export default useSocketListener

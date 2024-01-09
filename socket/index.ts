@@ -1,32 +1,28 @@
-import { io } from 'socket.io-client'
+import { Socket, io } from 'socket.io-client'
 import { API_PORT } from '@/utils/constants'
-// import { useEffect, useState } from 'react'
-// import { useSelector } from 'react-redux'
-// import { UserState } from '@/store/slices/userSlice'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { UserState } from '@/store/slices/userSlice'
 
-const socket = io(API_PORT)
+const useSocket = () => {
+  const [socket, setSocket] = useState<Socket>()
+  const userId = useSelector((state: UserState) => state?.userState.user?.id)
 
-export default socket
+  useEffect(() => {
+    const initializeSocket = async () => {
+      const socketInstance = io(API_PORT, { query: { userId } })
 
-// const useSocket = () => {
-//   const [socket, setSocket] = useState<Socket>()
-//   const userId = useSelector((state: UserState) => state?.userState.user?.id)
+      setSocket(socketInstance)
+    }
 
-//   useEffect(() => {
-//     const initializeSocket = async () => {
-//       const newSocket = io(API_PORT, { query: { userId } })
+    if (!socket) initializeSocket()
 
-//       setSocket(newSocket)
-//     }
+    return () => {
+      if (socket) socket.disconnect()
+    }
+  }, [])
 
-//     initializeSocket()
+  return socket
+}
 
-//     return () => {
-//       if (socket) socket.disconnect()
-//     }
-//   }, [])
-
-//   return socket
-// }
-
-// export default useSocket
+export default useSocket

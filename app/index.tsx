@@ -10,7 +10,6 @@ import NeoTextField from '@/components/NeoTextField'
 import { getUserInfo, loginByEmail, registerByEmail, verifyEmail } from '../api'
 import { useAuthToken } from '@/utils'
 import { setUserData } from '@/store/slices/userSlice'
-import socket from '../socket'
 
 export default function ContactList() {
   const [email, setEmail] = useState('joe@doe.com')
@@ -50,8 +49,6 @@ export default function ContactList() {
     await saveToken(access_token)
 
     const userInfo = await getUserInfo()
-
-    socket.emit('connectingSocket', userInfo.id)
 
     dispatch(setUserData(userInfo))
 

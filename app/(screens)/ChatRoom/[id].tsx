@@ -13,7 +13,7 @@ import NeonStrip from '@/components/NeonStrip'
 import { ChatMessage, MessageStatus, UserInfo } from '@/types/globalTypes'
 import { useSelector } from 'react-redux'
 import { getChatInfo } from '@/api'
-import socket from '@/socket/index'
+import useSocket from '@/socket/index'
 import useSocketListener from '@/utils/useSocketListener'
 import { API_PORT } from '@/utils/constants'
 import TypingIndicator from '@/components/TypingIndicator'
@@ -35,6 +35,8 @@ export default function ChatRoom() {
     (state: UserState) => state?.userState.user,
   )
 
+  const socket = useSocket()
+
   const localSocket = io(API_PORT)
 
   const handleGetAllMessages = useCallback(
@@ -49,12 +51,12 @@ export default function ChatRoom() {
       )
         return
 
-      socket.emit('markMessagesAsReaded', {
-        userId: user?.id,
-        contactId: chatInfo?.id,
+      socket?.emit('markAllMessagesAsReaded', {
+        receiverId: user?.id,
+        senderId: chatInfo?.id,
       })
     },
-    [chatInfo?.id, user?.id],
+    [chatInfo?.id, user?.id, socket],
   )
 
   const fetchChatInfo = useCallback(async () => {
@@ -65,15 +67,19 @@ export default function ChatRoom() {
 
       setChatInfo(chatInfoResponse)
 
-      socket.emit('getAllMessages', {}, handleGetAllMessages)
+      socket?.emit(
+        'getAllMessages',
+        { senderId: user?.id, receiverId: chatInfo?.id },
+        handleGetAllMessages,
+      )
     } catch (error) {
       console.error('Erro capturado', error)
     }
-  }, [handleGetAllMessages, id])
+  }, [chatInfo?.id, handleGetAllMessages, id, socket, user?.id])
 
   const sendMessage = useCallback(
     () =>
-      socket.emit(
+      socket?.emit(
         'sendMessage',
         {
           content: textMessage,
@@ -84,7 +90,7 @@ export default function ChatRoom() {
         },
         () => setTextMessage(''),
       ),
-    [chatInfo?.id, textMessage, user?.id],
+    [chatInfo?.id, textMessage, user?.id, socket],
   )
 
   const scrollToEnd = useCallback(
@@ -94,7 +100,11 @@ export default function ChatRoom() {
   )
 
   const updateTypingState = (isTyping: boolean) => {
-    socket.emit('typing', { userId: user?.id, name: user?.firstName, isTyping })
+    socket?.emit('typing', {
+      receiverId: chatInfo?.id,
+      name: user?.firstName,
+      isTyping,
+    })
     setIsTyping(isTyping)
   }
 
@@ -118,16 +128,12 @@ export default function ChatRoom() {
   )
 
   const handleTypingEvent = ({
-    userId,
     name,
     isTyping,
   }: {
-    userId: number
     name: string
     isTyping: boolean
   }) => {
-    if (userId === user?.id) return
-
     if (isTyping) setWhoIsTyping(`${name} is typing...`)
     else setWhoIsTyping('')
   }
@@ -137,7 +143,7 @@ export default function ChatRoom() {
   }, [scrollToEnd])
 
   const setChatRoomId = () => {
-    socket.emit('SetChatRoomId', {
+    socket?.emit('SetChatRoomId', {
       userId: user?.id,
       socketId: localSocket.id,
     })
