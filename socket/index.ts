@@ -20,6 +20,7 @@ const useSocket = () => {
     return () => {
       if (socket) socket.disconnect()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return socket

@@ -1,7 +1,6 @@
 import { StyleSheet, View, FlatList, Keyboard } from 'react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
-import { io } from 'socket.io-client'
 
 import TokyoImageButton from '@/components/TokyoImageButton'
 import MainGradientBg from '@/components/MainGradientBg'
@@ -10,12 +9,16 @@ import NeoTextField from '@/components/NeoTextField'
 import ChatMessageBox from '@/components/ChatMessageBox'
 import NeonStrip from '@/components/NeonStrip'
 
-import { ChatMessage, MessageStatus, UserInfo } from '@/types/globalTypes'
+import {
+  ChatMessage,
+  ChatStatus,
+  MessageStatus,
+  UserInfo,
+} from '@/types/globalTypes'
 import { useSelector } from 'react-redux'
 import { getChatInfo } from '@/api'
 import useSocket from '@/socket/index'
 import useSocketListener from '@/utils/useSocketListener'
-import { API_PORT } from '@/utils/constants'
 import TypingIndicator from '@/components/TypingIndicator'
 import { UserState } from '@/store/slices/userSlice'
 
@@ -36,8 +39,6 @@ export default function ChatRoom() {
   )
 
   const socket = useSocket()
-
-  const localSocket = io(API_PORT)
 
   const handleGetAllMessages = useCallback(
     (allMessages: ChatMessage[]) => {
@@ -72,6 +73,11 @@ export default function ChatRoom() {
         { senderId: user?.id, receiverId: chatInfo?.id },
         handleGetAllMessages,
       )
+
+      socket?.emit('SetChatRoomId', {
+        userId: user?.id,
+        chatId: chatInfo?.id,
+      })
     } catch (error) {
       console.error('Erro capturado', error)
     }
@@ -138,24 +144,22 @@ export default function ChatRoom() {
     else setWhoIsTyping('')
   }
 
+  const handleChatStatusUpdate = (chatStatus: boolean) => {
+    if (!chatInfo) return
+
+    setChatInfo({
+      ...chatInfo,
+      status: chatStatus ? ChatStatus.ONLINE : ChatStatus.OFFLINE,
+    })
+  }
+
   const setKeyboardListener = useCallback(() => {
     return Keyboard.addListener('keyboardDidShow', () => scrollToEnd())
   }, [scrollToEnd])
 
-  const setChatRoomId = () => {
-    socket?.emit('SetChatRoomId', {
-      userId: user?.id,
-      socketId: localSocket.id,
-    })
-  }
-
   useSocketListener('typing', handleTypingEvent)
-  useSocketListener('message', handleMessageEvent, null, {
-    shouldTurnOff: false,
-  })
-  useSocketListener('connect', setChatRoomId, localSocket, {
-    useLocalSocket: true,
-  })
+  useSocketListener('chatStatusUpdate', handleChatStatusUpdate, [chatInfo])
+  useSocketListener('message', handleMessageEvent, [], false)
 
   useEffect(() => {
     fetchChatInfo()
@@ -164,8 +168,13 @@ export default function ChatRoom() {
 
     return () => {
       keyboardDidShowListener.remove()
+
+      socket?.emit('SetChatRoomId', {
+        userId: user?.id.toString(),
+        chatId: null,
+      })
     }
-  }, [fetchChatInfo, setKeyboardListener])
+  }, [fetchChatInfo, setKeyboardListener, socket, user?.id])
 
   return (
     <MainGradientBg>

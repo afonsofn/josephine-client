@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAuthToken } from '@/utils'
 import { UserState, setUserData } from '@/store/slices/userSlice'
 import useSocketListener from '@/utils/useSocketListener'
+import useSocket from '@/socket/index'
 
 export default function ContactList() {
   const [userContacts, setUserContacts] = useState<ChatBoxInfo[]>([])
@@ -26,6 +27,7 @@ export default function ContactList() {
 
   const dispatch = useDispatch()
   const { clearToken } = useAuthToken()
+  const socket = useSocket()
 
   const loadUserContacts = async () => {
     const userContactsResponse = await getUserContacts()
@@ -54,6 +56,7 @@ export default function ContactList() {
           onPress={() => {
             clearToken()
             dispatch(setUserData(null))
+            socket?.disconnect()
 
             router.push('/')
           }}

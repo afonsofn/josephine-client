@@ -1,1 +1,1 @@
-export const API_PORT = 'http://localhost:3332'
+export const API_PORT = 'http://localhost:3333'

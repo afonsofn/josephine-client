@@ -1,35 +1,24 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect } from 'react'
 import useSocket from '@/socket/index'
-import { Socket } from 'socket.io-client'
 
 const useSocketListener = (
   event: string,
-  handler: (arg?: any) => void,
-  localSocket?: Socket | null,
-  options: { shouldTurnOff?: boolean; useLocalSocket?: boolean } = {
-    shouldTurnOff: true,
-    useLocalSocket: false,
-  },
+  handler: (arg?: any) => any,
+  dependencies: React.DependencyList = [],
+  shouldTurnOff = true,
 ) => {
   const globalSocket = useSocket()
 
   useEffect(() => {
-    if (options.useLocalSocket && localSocket) {
-      localSocket.on(event, handler)
-
-      return () => {
-        localSocket.disconnect()
-        handler()
-      }
-    }
-
     globalSocket?.on(event, handler)
 
     return () => {
-      if (options?.shouldTurnOff) globalSocket?.off(event, handler)
+      if (shouldTurnOff) globalSocket?.off(event, handler)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalSocket])
+  }, [globalSocket, ...dependencies])
 }
 
 export default useSocketListener
