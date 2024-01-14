@@ -99,12 +99,6 @@ export default function ChatRoom() {
     [chatInfo?.id, textMessage, user?.id, socket],
   )
 
-  const scrollToEnd = useCallback(
-    (delayed = false) =>
-      setTimeout(() => flatListRef.current?.scrollToEnd(), delayed ? 100 : 0),
-    [],
-  )
-
   const updateTypingState = (isTyping: boolean) => {
     socket?.emit('typing', {
       receiverId: chatInfo?.id,
@@ -127,10 +121,8 @@ export default function ChatRoom() {
   const handleMessageEvent = useCallback(
     (message: ChatMessage) => {
       setChatMessages((currentMessages) => [...currentMessages, message])
-
-      scrollToEnd(true)
     },
-    [setChatMessages, scrollToEnd],
+    [setChatMessages],
   )
 
   const handleTypingEvent = ({
@@ -153,10 +145,6 @@ export default function ChatRoom() {
     })
   }
 
-  const setKeyboardListener = useCallback(() => {
-    return Keyboard.addListener('keyboardDidShow', () => scrollToEnd())
-  }, [scrollToEnd])
-
   useSocketListener('typing', handleTypingEvent)
   useSocketListener('chatStatusUpdate', handleChatStatusUpdate, [chatInfo])
   useSocketListener('message', handleMessageEvent, [], false)
@@ -164,17 +152,13 @@ export default function ChatRoom() {
   useEffect(() => {
     fetchChatInfo()
 
-    const keyboardDidShowListener = setKeyboardListener()
-
     return () => {
-      keyboardDidShowListener.remove()
-
       socket?.emit('SetChatRoomId', {
         userId: user?.id.toString(),
         chatId: null,
       })
     }
-  }, [fetchChatInfo, setKeyboardListener, socket, user?.id])
+  }, [fetchChatInfo, socket, user?.id])
 
   return (
     <MainGradientBg>
@@ -193,12 +177,12 @@ export default function ChatRoom() {
       >
         <FlatList
           ref={flatListRef}
-          data={chatMessages}
+          data={chatMessages.slice().reverse()}
           renderItem={({ item }) => <ChatMessageBox message={item} />}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.messagesList}
-          onContentSizeChange={() => scrollToEnd()}
           showsVerticalScrollIndicator={false}
+          inverted
         />
 
         <TypingIndicator whoIsTyping={whoIsTyping} />

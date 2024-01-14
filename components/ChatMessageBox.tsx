@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native'
+import { Animated, StyleSheet, View } from 'react-native'
+import { useEffect, useRef } from 'react'
 
 import Text from '@/components/Text'
 
@@ -22,12 +23,25 @@ export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
 
   const isSentByUser = () => user?.id === message.senderId
 
+  const slideAnim = useRef(
+    new Animated.Value(isSentByUser() ? -20 : 20),
+  ).current
+
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start()
+  }, [slideAnim])
+
   return (
-    <View
-      style={[
-        styles.linearGradient,
-        { alignSelf: isSentByUser() ? 'flex-end' : 'flex-start' },
-      ]}
+    <Animated.View
+      style={{
+        ...styles.linearGradient,
+        alignSelf: isSentByUser() ? 'flex-end' : 'flex-start',
+        transform: [{ translateX: slideAnim }],
+      }}
     >
       <View>
         <Text
@@ -48,7 +62,7 @@ export default function ChatMessageBox({ message }: ChatMessageBoxProps) {
           </Text>
         </View>
       </View>
-    </View>
+    </Animated.View>
   )
 }
 
