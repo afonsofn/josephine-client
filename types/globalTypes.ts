@@ -11,8 +11,8 @@ export enum ChatStatus {
 
 export interface ChatMessage {
   id: number
-  receiverId: number
-  senderId: number
+  receiverId: string
+  senderId: string
   contactId: number
   groupId?: number
   content: string
@@ -25,7 +25,7 @@ export interface ChatBoxInfo {
   firstName: string
   lastName: string
   imageUrl: string
-  userId: number
+  userId: string
   contactId: number
   lastMessage: ChatMessage
 }
@@ -37,10 +37,26 @@ export interface UserInfo {
   firstName: string
   lastName: string
   nickname: string
-  id: number
+  id: string
   imageUrl?: string
   phoneNumber?: string
   provider?: string
   status: ChatStatus
   verified: boolean
+}
+
+export interface ChatInfo {
+  createdAt: string
+  updatedAt: string
+  email: string
+  firstName: string
+  lastName: string
+  nickname: string
+  id: string
+  imageUrl?: string
+  phoneNumber?: string
+  provider?: string
+  status: ChatStatus
+  verified: boolean
+  contactId: number
 }

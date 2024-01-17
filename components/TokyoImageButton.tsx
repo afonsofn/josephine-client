@@ -1,6 +1,8 @@
 import { Image, StyleSheet, TouchableWithoutFeedback, View } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import Text from '@/components/Text'
 import { TokyoImageButtonProps } from '@/types/propTypes'
+import colors from '@/utils/colors'
 
 export default function TokyoImageButton({
   onPress,
@@ -17,7 +19,12 @@ export default function TokyoImageButton({
             style={styles.buttonImage}
           />
         ) : (
-          <View style={styles.buttonImage}></View>
+          <LinearGradient
+            colors={colors.chatBoxEmptyImageGradient}
+            start={{ x: 1, y: -2 }}
+            end={{ x: 0, y: 2 }}
+            style={styles.buttonImage}
+          ></LinearGradient>
         )}
 
         <Text style={{ lineHeight: 16, paddingBottom: 0 }}>私のエリア</Text>
@@ -40,6 +47,5 @@ const styles = StyleSheet.create({
     height: '100%',
     width: 34,
     resizeMode: 'cover',
-    backgroundColor: 'red',
   },
 })

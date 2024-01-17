@@ -20,8 +20,8 @@ export default function ChatBox({
   )
 
   const isHighLight =
-    lastMessage.status === MessageStatus.SENT &&
-    lastMessage.senderId !== user?.id
+    lastMessage?.status === MessageStatus.SENT &&
+    lastMessage?.senderId !== user?.id
 
   function formatTime(dateTimeString: string) {
     const date = new Date(dateTimeString)
@@ -60,7 +60,7 @@ export default function ChatBox({
           ) : (
             <LinearGradient
               colors={colors.chatBoxEmptyImageGradient}
-              start={{ x: 1, y: -0.8 }}
+              start={{ x: 1, y: -1.2 }}
               end={{ x: 0, y: 1.2 }}
               style={styles.contactPhoto}
             ></LinearGradient>
@@ -76,12 +76,13 @@ export default function ChatBox({
                 ellipsizeMode="tail"
                 style={{ fontSize: 12 }}
               >
-                {lastMessage.content}
+                {lastMessage?.content}
               </Text>
             </View>
 
             <Text highLight={isHighLight} lowLight={!isHighLight}>
-              {formatTime(lastMessage.createdAt)} 読む
+              {lastMessage?.createdAt ? formatTime(lastMessage.createdAt) : ''}{' '}
+              読む
             </Text>
           </View>
         </LinearGradient>

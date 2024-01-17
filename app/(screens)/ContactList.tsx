@@ -17,6 +17,7 @@ import { useAuthToken } from '@/utils'
 import { UserState, setUserData } from '@/store/slices/userSlice'
 import useSocketListener from '@/utils/useSocketListener'
 import useSocket from '@/socket/index'
+import { joinChatRoom } from '@/api/services/messages'
 
 export default function ContactList() {
   const [userContacts, setUserContacts] = useState<ChatBoxInfo[]>([])
@@ -35,6 +36,8 @@ export default function ContactList() {
     setUserContacts(userContactsResponse)
   }
   const handleMessage = async (message: ChatMessage) => {
+    if (!message) return
+
     if (message.senderId === user?.id || message.receiverId === user?.id)
       await loadUserContacts()
   }
@@ -66,7 +69,12 @@ export default function ContactList() {
           title="config"
           subtitle="構成ハブ"
           Icon={() => <ConfigIcon />}
-          onPress={() => router.push('/ConfigPanel')}
+          onPress={() =>
+            joinChatRoom({
+              userId: '4321ae20-fc80-495d-be61-a22651f47b20',
+              targetUserId: '9ee6134b-9bf6-448d-8b8b-c9b737272b20',
+            })
+          }
         />
       </View>
 

@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 import { View } from 'react-native'
 import { useState } from 'react'
 import { router } from 'expo-router'
@@ -33,20 +35,22 @@ export default function ContactList() {
   }
 
   const verify = async () => {
-    // eslint-disable-next-line camelcase
     const { access_token } = await verifyEmail({ email, verificationCode })
 
-    await saveToken(access_token)
+    await setUserInfoAndRedirect(access_token)
   }
 
   const login = async () => {
-    // eslint-disable-next-line camelcase
     const { access_token } = await loginByEmail({
       email,
       password,
     })
 
-    await saveToken(access_token)
+    await setUserInfoAndRedirect(access_token)
+  }
+
+  const setUserInfoAndRedirect = async (accessToken: string) => {
+    await saveToken(accessToken)
 
     const userInfo = await getUserInfo()
 

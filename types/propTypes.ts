@@ -4,9 +4,9 @@ import { ChatStatus, ChatMessage } from './globalTypes'
 
 export interface ChatBoxProps {
   chatName: string
-  lastMessage: ChatMessage
+  lastMessage: ChatMessage | null
   chatImage?: string
-  chatId: number
+  chatId: string
 }
 
 export interface TokyoButtonProps {

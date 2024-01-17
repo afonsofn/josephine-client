@@ -4,8 +4,8 @@ export const joinChatRoom = async ({
   userId,
   targetUserId,
 }: {
-  userId: number
-  targetUserId: number
+  userId: string
+  targetUserId: string
 }) => {
   await api.post('messages/join-chat', {
     userId,

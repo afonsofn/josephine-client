@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList, Keyboard } from 'react-native'
+import { StyleSheet, View, FlatList } from 'react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
 
@@ -8,8 +8,10 @@ import ChatGradientBg from '@/components/ChatGradientBg'
 import NeoTextField from '@/components/NeoTextField'
 import ChatMessageBox from '@/components/ChatMessageBox'
 import NeonStrip from '@/components/NeonStrip'
+import Text from '@/components/Text'
 
 import {
+  ChatInfo,
   ChatMessage,
   ChatStatus,
   MessageStatus,
@@ -25,11 +27,16 @@ import { UserState } from '@/store/slices/userSlice'
 export default function ChatRoom() {
   const { id } = useLocalSearchParams()
 
-  const [chatInfo, setChatInfo] = useState<UserInfo | null>(null)
+  const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [isTyping, setIsTyping] = useState(false)
   const [whoIsTyping, setWhoIsTyping] = useState('')
   const [textMessage, setTextMessage] = useState('')
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 20
 
   const flatListRef = useRef<FlatList>(null)
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -43,6 +50,8 @@ export default function ChatRoom() {
   const handleGetAllMessages = useCallback(
     (allMessages: ChatMessage[]) => {
       setChatMessages(allMessages)
+
+      setHasMoreMessages(allMessages.length === pageSize)
 
       const lastMessage = allMessages.at(-1)
 
@@ -60,19 +69,26 @@ export default function ChatRoom() {
     [chatInfo?.id, user?.id, socket],
   )
 
+  const getAllMessages = useCallback(async () => {
+    socket?.emit(
+      'getAllMessages',
+      {
+        senderId: user?.id,
+        receiverId: chatInfo?.id,
+        page: currentPage,
+        pageSize,
+      },
+      handleGetAllMessages,
+    )
+  }, [chatInfo?.id, handleGetAllMessages, socket, user?.id, currentPage])
+
   const fetchChatInfo = useCallback(async () => {
     try {
-      const chatInfoResponse = await getChatInfo(Number(id))
-
-      console.log(chatInfoResponse)
+      const chatInfoResponse = await getChatInfo(id as string)
 
       setChatInfo(chatInfoResponse)
 
-      socket?.emit(
-        'getAllMessages',
-        { senderId: user?.id, receiverId: chatInfo?.id },
-        handleGetAllMessages,
-      )
+      getAllMessages()
 
       socket?.emit('SetChatRoomId', {
         userId: user?.id,
@@ -81,7 +97,7 @@ export default function ChatRoom() {
     } catch (error) {
       console.error('Erro capturado', error)
     }
-  }, [chatInfo?.id, handleGetAllMessages, id, socket, user?.id])
+  }, [id, getAllMessages, socket, user?.id, chatInfo?.id])
 
   const sendMessage = useCallback(
     () =>
@@ -91,12 +107,11 @@ export default function ChatRoom() {
           content: textMessage,
           senderId: user?.id,
           receiverId: chatInfo?.id,
-          // TODO PARAMETRIZAR ISSO CORRETAMENTE
-          contactId: 1,
+          contactId: chatInfo?.contactId,
         },
         () => setTextMessage(''),
       ),
-    [chatInfo?.id, textMessage, user?.id, socket],
+    [socket, textMessage, user?.id, chatInfo?.id, chatInfo?.contactId],
   )
 
   const updateTypingState = (isTyping: boolean) => {
@@ -145,6 +160,27 @@ export default function ChatRoom() {
     })
   }
 
+  const onEndReached = async () => {
+    if (isLoadingMore || !hasMoreMessages) return
+
+    setCurrentPage(currentPage + 1)
+    setIsLoadingMore(true)
+
+    socket?.emit(
+      'getAllMessages',
+      {
+        senderId: user?.id,
+        receiverId: chatInfo?.id,
+        page: currentPage,
+        pageSize,
+      },
+      (allMessages: ChatMessage[]) => {
+        handleGetAllMessages(allMessages)
+        setIsLoadingMore(false)
+      },
+    )
+  }
+
   useSocketListener('typing', handleTypingEvent)
   useSocketListener('chatStatusUpdate', handleChatStatusUpdate, [chatInfo])
   useSocketListener('message', handleMessageEvent, [], false)
@@ -175,15 +211,39 @@ export default function ChatRoom() {
         chatStatus={chatInfo?.status}
         chatName={chatInfo?.firstName + ' ' + chatInfo?.lastName}
       >
-        <FlatList
-          ref={flatListRef}
-          data={chatMessages.slice().reverse()}
-          renderItem={({ item }) => <ChatMessageBox message={item} />}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.messagesList}
-          showsVerticalScrollIndicator={false}
-          inverted
-        />
+        {chatMessages.length ? (
+          <FlatList
+            ref={flatListRef}
+            data={chatMessages.slice().reverse()}
+            renderItem={({ item }) => <ChatMessageBox message={item} />}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+            inverted
+          />
+        ) : (
+          <View
+            style={{
+              position: 'absolute',
+              top: '80%',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Text lowLight style={{ fontSize: 12 }}>
+              まだ誰もここにはいない
+            </Text>
+            <Text lowLight style={{ fontSize: 12 }}>
+              No messages yet
+            </Text>
+          </View>
+        )}
 
         <TypingIndicator whoIsTyping={whoIsTyping} />
       </ChatGradientBg>

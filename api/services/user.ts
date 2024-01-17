@@ -12,7 +12,7 @@ export const getUserInfo = async () => {
   return data
 }
 
-export const getChatInfo = async (id: number) => {
+export const getChatInfo = async (id: string) => {
   const { data } = await api.get(`users/${id}`)
 
   return data
