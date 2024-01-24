@@ -13,7 +13,7 @@ import { getUserInfo, loginByEmail, registerByEmail, verifyEmail } from '../api'
 import { useAuthToken } from '@/utils'
 import { setUserData } from '@/store/slices/userSlice'
 
-export default function ContactList() {
+export default function HomeScreen() {
   const [email, setEmail] = useState('joe@doe.com')
   const [password, setPassword] = useState('Password@123')
   const [firstName, setFirstName] = useState('')
@@ -102,13 +102,3 @@ export default function ContactList() {
     </MainGradientBg>
   )
 }
-
-// REFACT WHEN CREATE THE STYLE FOR IT
-// <View
-//   style={{ alignItems: 'center', justifyContent: 'center', height: '100%' }}
-// >
-//   <Text style={{ color: 'blue' }}>Hello</Text>
-//   <Link href="/ContactList">
-//     <Text style={{ color: 'red' }}>ContactList</Text>
-//   </Link>
-// </View>

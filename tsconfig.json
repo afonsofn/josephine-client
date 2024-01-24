@@ -11,7 +11,9 @@
       "@/types/*": ["types/*"],
       "@/store/*": ["store/*"],
       "@/*": ["./*"],
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "**/*.ts",

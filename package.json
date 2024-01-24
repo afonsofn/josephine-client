@@ -15,11 +15,15 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@babel/plugin-proposal-decorators": "^7.23.7",
+    "@babel/plugin-transform-class-properties": "^7.23.3",
     "@expo/vector-icons": "^13.0.0",
     "@react-native-async-storage/async-storage": "1.18.2",
     "@react-navigation/native": "^6.0.2",
+    "@react-navigation/stack": "^6.3.20",
     "@reduxjs/toolkit": "^2.0.1",
     "axios": "^1.6.2",
+    "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "expo": "~49.0.15",
     "expo-blur": "~12.4.1",
     "expo-font": "~11.4.0",
@@ -43,7 +47,9 @@
     "react-redux": "^9.0.4",
     "redux": "^5.0.0",
     "redux-persist": "^6.0.0",
-    "socket.io-client": "^4.7.2"
+    "reflect-metadata": "^0.2.1",
+    "socket.io-client": "^4.7.2",
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

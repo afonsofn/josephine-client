@@ -1,42 +1,36 @@
 import { StyleSheet, View, ScrollView } from 'react-native'
 import { useEffect, useState } from 'react'
-import { router } from 'expo-router'
+import { useSelector } from 'react-redux'
 
-import { ConfigIcon, SearchIcon, NewChatIcon } from '@/components/icons'
+import { UserState } from '@/store/slices/userSlice'
+
+import { UserService } from '../../_services/abstractions/user.service'
+
+import { SearchIcon } from '@/components/icons'
 import MainGradientBg from '@/components/MainGradientBg'
 import TokyoButton from '@/components/TokyoButton'
 import NeonBars from '@/components/NeonBars'
 import ChatBox from '@/components/ChatBox'
 import Text from '@/components/Text'
 
-import { ChatBoxInfo, ChatMessage, UserInfo } from '@/types'
-
-import { useDispatch, useSelector } from 'react-redux'
-import { useAuthToken } from '@/utils'
-import { UserState, setUserData } from '@/store/slices/userSlice'
 import useSocketListener from '@/utils/useSocketListener'
-import useSocket from '@/socket/index'
-import { joinChatRoom } from '@/api/services/messages'
-import { UserService } from '../_services/abstractions/user.service'
 
-export default function ContactList() {
+import { ChatBoxInfo, ChatMessage } from '@/types'
+import ContactListHeader from './components/header'
+
+export default function NewContactList() {
   const userService = UserService.getInstance()
 
   const [userContacts, setUserContacts] = useState<ChatBoxInfo[]>([])
 
-  const user: UserInfo | null = useSelector(
-    (state: UserState) => state?.userState.user,
-  )
-
-  const dispatch = useDispatch()
-  const { clearToken } = useAuthToken()
-  const socket = useSocket()
+  const user = useSelector((state: UserState) => state?.userState.user)
 
   const loadUserContacts = async () => {
     const userContactsResponse = await userService.getUserContacts()
 
     setUserContacts(userContactsResponse)
   }
+
   const handleMessage = async (message: ChatMessage) => {
     if (!message) return
 
@@ -53,32 +47,7 @@ export default function ContactList() {
 
   return (
     <MainGradientBg>
-      <View style={styles.header}>
-        <TokyoButton
-          title="logout for now"
-          subtitle="新しいチャット"
-          Icon={() => <NewChatIcon />}
-          onPress={() => {
-            clearToken()
-            dispatch(setUserData(null))
-            socket?.disconnect()
-
-            router.push('/')
-          }}
-        />
-
-        <TokyoButton
-          title="config"
-          subtitle="構成ハブ"
-          Icon={() => <ConfigIcon />}
-          onPress={() =>
-            joinChatRoom({
-              userId: '4321ae20-fc80-495d-be61-a22651f47b20',
-              targetUserId: '9ee6134b-9bf6-448d-8b8b-c9b737272b20',
-            })
-          }
-        />
-      </View>
+      <ContactListHeader />
 
       <View>
         <Text accentColor>ジョセフィーヌのアプリ</Text>
@@ -114,11 +83,6 @@ export default function ContactList() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 48,
-  },
   contactList: {
     gap: 12,
     marginVertical: 24,
